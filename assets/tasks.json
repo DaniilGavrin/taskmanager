@@ -1,0 +1,18 @@
+[
+    {
+      "title": "Сделать утреннюю зарядку",
+      "description": "30 минут упражнений",
+      "isCompleted": false
+    },
+    {
+      "title": "Прочитать книгу",
+      "description": "Глава из книги по Flutter",
+      "isCompleted": false
+    },
+    {
+      "title": "Собрать отчет",
+      "description": "Данные за ноябрь 2024 года",
+      "isCompleted": true
+    }
+  ]
+  

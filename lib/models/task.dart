@@ -1,27 +1,29 @@
-enum TaskType { hourly, fixed }
-
 class Task {
-  String title;
-  String description;
-  TaskType type;
-  double costPerHour; // Почасовая ставка
-  double fixedCost; // Фиксированная стоимость
-  Duration timeSpent; // Время выполнения
-  bool isCompleted;
+  final String title;
+  final String description;
+  final bool isCompleted;
 
   Task({
     required this.title,
     required this.description,
-    required this.type,
-    this.costPerHour = 0.0,
-    this.fixedCost = 0.0,
-    this.timeSpent = const Duration(),
-    this.isCompleted = false,
+    required this.isCompleted,
   });
 
-  double get totalCost {
-    return type == TaskType.hourly
-        ? costPerHour * timeSpent.inHours
-        : fixedCost;
+  // Десериализация из JSON
+  factory Task.fromJson(Map<String, dynamic> json) {
+    return Task(
+      title: json['title'],
+      description: json['description'],
+      isCompleted: json['isCompleted'],
+    );
+  }
+
+  // Сериализация в JSON
+  Map<String, dynamic> toJson() {
+    return {
+      'title': title,
+      'description': description,
+      'isCompleted': isCompleted,
+    };
   }
 }
