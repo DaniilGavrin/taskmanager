@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:taskmanager/main.dart';
+import 'package:taskmanager/tasks_screen.dart';
 import '../repositories/project_repository.dart';
 import '../models/project.dart';
 
@@ -22,6 +24,40 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Проекты', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600)),
+        actions: [
+          PopupMenuButton<String>(
+            onSelected: (value) {
+              if (value == 'Проекты') {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ProjectsScreen()),
+                );
+              } else if (value == 'Задачи') {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => TasksScreen()),
+                );
+              } else if (value == 'Главное меню') {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => HomeScreen()),
+                );
+              }
+            },
+            itemBuilder: (BuildContext context) {
+              return {'Проекты', 'Задачи', 'Главное меню'}.map((String choice) {
+                return PopupMenuItem<String>(
+                  value: choice,
+                  child: Text(
+                    choice,
+                    style: TextStyle(fontSize: 16),
+                  ),
+                );
+              }).toList();
+            },
+            icon: Icon(Icons.menu),
+          ),
+        ],
       ),
       body: FutureBuilder<List<Project>>(
         future: _projectsFuture,

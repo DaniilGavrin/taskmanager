@@ -41,10 +41,15 @@ class HomeScreen extends StatelessWidget {
                   context,
                   MaterialPageRoute(builder: (context) => TasksScreen()),
                 );
+              } else if (value == 'Главное меню') {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => HomeScreen()),
+                );
               }
             },
             itemBuilder: (BuildContext context) {
-              return {'Проекты', 'Задачи'}.map((String choice) {
+              return {'Проекты', 'Задачи', 'Главное меню'}.map((String choice) {
                 return PopupMenuItem<String>(
                   value: choice,
                   child: Text(
