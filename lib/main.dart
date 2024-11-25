@@ -1,91 +1,110 @@
 import 'package:flutter/material.dart';
-import 'projects_screen.dart';
-import 'tasks_screen.dart';
+import 'screens/projects_screen.dart';
+import 'screens/tasks_screen.dart';
+import 'models/project.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key}); // Add `const` to the constructor
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'TaskApp',
+      title: 'TaskAPP',
       theme: ThemeData(
         primarySwatch: Colors.blue,
+        textTheme: const TextTheme( // Use `const` for better performance
+          bodyLarge: TextStyle(fontFamily: 'Arial', fontSize: 18), // Updated text style name
+          headlineSmall: TextStyle(fontWeight: FontWeight.bold, fontSize: 24), // Updated headline style name
+        ),
       ),
-      home: HomeScreen(),
+      home: const HomeScreen(), // Add `const` here as well
     );
   }
 }
 
 class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key}); // Add `const` to the constructor
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'TaskApp',
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-        ),
-        actions: [
-          PopupMenuButton<String>(
-            onSelected: (value) {
-              if (value == 'Проекты') {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => ProjectsScreen()),
-                );
-              } else if (value == 'Задачи') {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => TasksScreen()),
-                );
-              } else if (value == 'Главное меню') {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => HomeScreen()),
-                );
-              }
-            },
-            itemBuilder: (BuildContext context) {
-              return {'Проекты', 'Задачи', 'Главное меню'}.map((String choice) {
-                return PopupMenuItem<String>(
-                  value: choice,
-                  child: Text(
-                    choice,
-                    style: TextStyle(fontSize: 16),
-                  ),
-                );
-              }).toList();
-            },
-            icon: Icon(Icons.menu),
+      // Background with gradient
+      body: Container(
+        decoration: const BoxDecoration( // Use `const` here
+          gradient: LinearGradient(
+            colors: [Colors.blueAccent, Colors.cyan],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
-        ],
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.task_alt,
-              size: 100,
-              color: Colors.blueAccent,
-            ),
-            SizedBox(height: 20),
-            Text(
-              'Добро пожаловать в TaskApp!',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w600),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 10),
-            Text(
-              'Начните с выбора раздела в меню',
-              style: TextStyle(fontSize: 16, color: Colors.grey[700]),
-              textAlign: TextAlign.center,
-            ),
-          ],
         ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Title with larger text style
+              const Text(
+                'Добро пожаловать в TaskAPP!',
+                style: TextStyle(
+                  fontSize: 30,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 50),
+              // Buttons with icons
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _buildMenuButton(
+                    context,
+                    'Проекты',
+                    Icons.work,
+                    ProjectsScreen(),
+                  ),
+                  const SizedBox(width: 20),
+                  _buildMenuButton(
+                    context,
+                    'Задачи',
+                    Icons.task,
+                    TasksScreen(
+                      project: Project(name: 'Новый проект', tasks: []),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Method to build menu button with icon and label
+  Widget _buildMenuButton(
+      BuildContext context, String label, IconData icon, Widget screen) {
+    return ElevatedButton.icon(
+      onPressed: () {
+        print('Открытие экрана: $label');
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => screen),
+        );
+      },
+      icon: Icon(icon, size: 30),
+      label: Text(label, style: const TextStyle(fontSize: 18)),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.white, // Use `backgroundColor` instead of `primary`
+        foregroundColor: Colors.blueAccent, // Use `foregroundColor` instead of `onPrimary`
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(30),
+        ),
+        elevation: 5,
       ),
     );
   }
