@@ -1,106 +1,121 @@
 import 'package:flutter/material.dart';
-import '../models/project.dart';
-import '../models/task.dart';
+import '../models/task_model.dart';
+import '../services/data_provider.dart';
+import 'task_detail_screen.dart';
 
 class TasksScreen extends StatefulWidget {
-  final Project project;
-
-  TasksScreen({required this.project});
-
   @override
   _TasksScreenState createState() => _TasksScreenState();
 }
 
 class _TasksScreenState extends State<TasksScreen> {
-  late List<Task> tasks;
+  final DataProvider _dataProvider = DataProvider();
+  List<Task> _tasks = [];
 
   @override
   void initState() {
     super.initState();
-    tasks = widget.project.tasks; // Теперь tasks это список объектов Task
-    print('Загружены задачи для проекта: ${widget.project.name}');
-    print('Количество задач: ${tasks.length}');
+    _loadTasks();
   }
 
-  // Добавление новой задачи
-  void _addTask() {
-    final newTask = Task(title: 'Новая задача', description: 'Описание задачи');
+  Future<void> _loadTasks() async {
+    final tasks = await _dataProvider.loadTasks();
     setState(() {
-      tasks.add(newTask);
+      _tasks = tasks;
     });
-    print('Добавлена новая задача: ${newTask.title}');
-    // Здесь вы можете сохранить изменения в проекте (например, обновить файл JSON)
+  }
+
+  Future<void> _addTask() async {
+    String? title;
+    String? description;
+
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Добавить задачу'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                decoration: const InputDecoration(labelText: 'Название задачи'),
+                onChanged: (value) => title = value,
+              ),
+              TextField(
+                decoration: const InputDecoration(labelText: 'Описание задачи'),
+                onChanged: (value) => description = value,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Отмена'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (title != null && title!.isNotEmpty) {
+                  Navigator.pop(context);
+                }
+              },
+              child: const Text('Добавить'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (title != null && title!.isNotEmpty) {
+      final newTask = Task(
+        id: DateTime.now().toString(),
+        projectId: '1', // Связь с проектом (можно добавить выбор проекта)
+        title: title!,
+        description: description ?? '',
+        createdDate: DateTime.now(),
+      );
+      setState(() {
+        _tasks.add(newTask);
+      });
+      await _dataProvider.saveTasks(_tasks);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.project.name),
-        backgroundColor: Colors.blueAccent,
-        elevation: 0,
+        title: const Text('Список задач'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: _addTask,
+          ),
+        ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: tasks.isEmpty
-            ? Center(
-                child: Text(
-                  'Нет задач для этого проекта. Добавьте новую задачу!',
-                  style: TextStyle(fontSize: 18, color: Colors.grey),
-                  textAlign: TextAlign.center,
-                ),
-              )
-            : ListView.separated(
-                itemCount: tasks.length,
-                itemBuilder: (context, index) {
-                  return GestureDetector(
-                    onTap: () {
-                      print('Выбрана задача: ${tasks[index].title}');
-                    },
-                    child: Card(
-                      elevation: 8,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
+      body: _tasks.isEmpty
+          ? const Center(child: Text('Нет задач'))
+          : ListView.builder(
+              itemCount: _tasks.length,
+              itemBuilder: (context, index) {
+                final task = _tasks[index];
+                return ListTile(
+                  title: Text(task.title),
+                  subtitle: Text(task.description),
+                  trailing: Icon(
+                    task.isCompleted ? Icons.check_circle : Icons.radio_button_unchecked,
+                    color: task.isCompleted ? Colors.green : Colors.grey,
+                  ),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => TaskDetailScreen(task: task),
                       ),
-                      margin: EdgeInsets.symmetric(vertical: 8),
-                      child: ListTile(
-                        contentPadding: EdgeInsets.all(16),
-                        title: Text(
-                          tasks[index].title,
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        subtitle: Text(
-                          tasks[index].description,
-                          style: TextStyle(fontSize: 14, color: Colors.grey),
-                        ),
-                        leading: Icon(
-                          Icons.task,
-                          color: Colors.blueAccent,
-                          size: 30,
-                        ),
-                        trailing: Icon(Icons.arrow_forward_ios, size: 18, color: Colors.grey),
-                      ),
-                    ),
-                  );
-                },
-                separatorBuilder: (context, index) {
-                  return Divider(
-                    color: Colors.grey.shade300,
-                    thickness: 1,
-                    height: 1,
-                  );
-                },
-              ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _addTask,
-        child: Icon(Icons.add),
-        backgroundColor: Colors.blueAccent,
-        tooltip: 'Добавить задачу',
-      ),
+                    );
+                  },
+                );
+              },
+            ),
     );
   }
 }
